@@ -209,9 +209,10 @@ const Storage = {
      * @returns {boolean} 是否成功
      */
     resetToDefaults(defaultBuildings) {
+        const now = Date.now();
         const buildingsWithIds = defaultBuildings.map((b, index) => ({
             ...b,
-            id: `default-building-${index}-${Date.now()}`,
+            id: `default-building-${index}-${now}`,
             addedAt: new Date().toISOString()
         }));
         return this.saveUserBuildings(buildingsWithIds);

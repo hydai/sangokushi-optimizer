@@ -801,9 +801,20 @@ const App = {
             item.appendChild(content);
 
             // 點擊整行可切換勾選
+            item.setAttribute('tabindex', '0'); // 使 item 可聚焦
             item.addEventListener('click', (e) => {
                 if (e.target !== checkbox && e.target.tagName !== 'SELECT' && e.target.tagName !== 'OPTION') {
                     checkbox.checked = !checkbox.checked;
+                }
+            });
+            // 鍵盤 Enter/Space 可切換勾選
+            item.addEventListener('keydown', (e) => {
+                if ((e.key === 'Enter' || e.key === ' ') && e.target === item) {
+                    // 避免在 select/checkbox 上觸發
+                    if (document.activeElement !== checkbox && document.activeElement !== select) {
+                        checkbox.checked = !checkbox.checked;
+                        e.preventDefault();
+                    }
                 }
             });
 
@@ -828,6 +839,10 @@ const App = {
 
         checkboxes.forEach(checkbox => {
             const index = parseInt(checkbox.dataset.index, 10);
+            // 驗證 index 有效性
+            if (!Number.isInteger(index) || index < 0 || index >= this._currentVariantBuilding.variants.length) {
+                return; // 無效的 index，跳過此 checkbox
+            }
             const variant = this._currentVariantBuilding.variants[index];
 
             // 取得使用者選擇的特技
