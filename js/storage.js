@@ -6,8 +6,7 @@
 const Storage = {
     KEYS: {
         CONFIGS: 'sangokushi_configs',
-        CURRENT_CONFIG: 'sangokushi_current',
-        TRAITS: 'sangokushi_traits'
+        CURRENT_CONFIG: 'sangokushi_current'
     },
 
     /**
@@ -124,76 +123,11 @@ const Storage = {
     },
 
     /**
-     * 取得特性效果資料
-     * @returns {Object} 特性效果對照表
-     */
-    getTraits() {
-        try {
-            const data = localStorage.getItem(this.KEYS.TRAITS);
-            return data ? JSON.parse(data) : this.getDefaultTraits();
-        } catch (e) {
-            console.error('讀取特性資料失敗:', e);
-            return this.getDefaultTraits();
-        }
-    },
-
-    /**
-     * 儲存特性效果資料
-     * @param {Object} traits - 特性效果對照表
-     */
-    saveTraits(traits) {
-        try {
-            localStorage.setItem(this.KEYS.TRAITS, JSON.stringify(traits));
-        } catch (e) {
-            console.error('儲存特性資料失敗:', e);
-        }
-    },
-
-    /**
-     * 取得預設特性效果（空白，等待使用者填寫）
-     * @returns {Object} 預設特性效果
-     */
-    getDefaultTraits() {
-        return {
-            // 格式: 特性名稱: { agriculture, mining, military, commerce }
-            // 範例：
-            // '興農': { agriculture: 5, mining: 0, military: 0, commerce: 0 }
-        };
-    },
-
-    /**
-     * 新增或更新特性
-     * @param {string} name - 特性名稱
-     * @param {Object} effects - 效果 { agriculture, mining, military, commerce }
-     */
-    updateTrait(name, effects) {
-        const traits = this.getTraits();
-        traits[name] = {
-            agriculture: effects.agriculture || 0,
-            mining: effects.mining || 0,
-            military: effects.military || 0,
-            commerce: effects.commerce || 0
-        };
-        this.saveTraits(traits);
-    },
-
-    /**
-     * 刪除特性
-     * @param {string} name - 特性名稱
-     */
-    deleteTrait(name) {
-        const traits = this.getTraits();
-        delete traits[name];
-        this.saveTraits(traits);
-    },
-
-    /**
      * 清除所有資料
      */
     clearAll() {
         localStorage.removeItem(this.KEYS.CONFIGS);
         localStorage.removeItem(this.KEYS.CURRENT_CONFIG);
-        localStorage.removeItem(this.KEYS.TRAITS);
     }
 };
 

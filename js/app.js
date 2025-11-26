@@ -8,8 +8,7 @@ const App = {
     state: {
         buildings: [],
         buildingsBySlot: {},
-        currentConfig: null,
-        traits: {}
+        currentConfig: null
     },
 
     /**
@@ -37,8 +36,11 @@ const App = {
     async init() {
         console.log('初始化應用程式...');
 
-        // 載入建築資料
-        await this.loadBuildings();
+        // 載入建築資料和特性資料
+        await Promise.all([
+            this.loadBuildings(),
+            this.loadTraits()
+        ]);
 
         // 載入儲存的設定
         this.loadSavedSettings();
@@ -61,6 +63,13 @@ const App = {
 
         // 分組處理
         this.processBuildingsBySlot();
+    },
+
+    /**
+     * 載入特性資料
+     */
+    async loadTraits() {
+        await TraitsManager.loadFromURL('data/traits.csv');
     },
 
     /**
@@ -105,7 +114,6 @@ const App = {
      */
     loadSavedSettings() {
         this.state.currentConfig = Storage.getCurrentConfig();
-        this.state.traits = Storage.getTraits();
     },
 
     /**
@@ -130,9 +138,6 @@ const App = {
         document.getElementById('loadConfigBtn')?.addEventListener('click', () => this.showLoadConfigModal());
         document.getElementById('newConfigBtn')?.addEventListener('click', () => this.resetConfig());
 
-        // 特性編輯按鈕
-        document.getElementById('editTraitsBtn')?.addEventListener('click', () => this.showTraitsModal());
-
         // Modal 關閉按鈕
         document.querySelectorAll('.modal-close').forEach(btn => {
             btn.addEventListener('click', () => this.closeModals());
@@ -152,7 +157,6 @@ const App = {
     render() {
         this.renderSlots();
         this.renderTargets();
-        this.renderTraitsSummary();
     },
 
     /**
@@ -179,29 +183,6 @@ const App = {
                 input.value = value || '';
             }
         });
-    },
-
-    /**
-     * 渲染特性摘要
-     */
-    renderTraitsSummary() {
-        const container = document.getElementById('traitsSummary');
-        if (!container) return;
-
-        this.clearElement(container);
-
-        const traits = Object.keys(this.state.traits);
-        const span = document.createElement('span');
-
-        if (traits.length === 0) {
-            span.className = 'no-traits';
-            span.textContent = '尚未設定特性效果';
-        } else {
-            span.className = 'traits-count';
-            span.textContent = `已設定 ${traits.length} 個特性`;
-        }
-
-        container.appendChild(span);
     },
 
     /**
@@ -240,7 +221,7 @@ const App = {
                 this.state.buildingsBySlot,
                 this.state.currentConfig.slots,
                 this.state.currentConfig.targets,
-                this.state.traits,
+                TraitsManager.getTraits(),
                 5
             );
 
@@ -334,6 +315,25 @@ const App = {
         });
         card.appendChild(buildingList);
 
+        // 額外效果（如果有的話）
+        const buildingObjects = buildings.map(b => b.building);
+        const extraEffects = TraitsManager.getExtraEffects(buildingObjects);
+
+        if (extraEffects.length > 0) {
+            const extraSection = this.createElement('div', 'result-extra-effects');
+            const extraTitle = this.createElement('div', 'extra-effects-title', '額外效果');
+            extraSection.appendChild(extraTitle);
+
+            extraEffects.forEach(({ trait, effect }) => {
+                const effectRow = this.createElement('div', 'extra-effect-row');
+                effectRow.appendChild(this.createElement('span', 'extra-effect-text', effect));
+                effectRow.appendChild(this.createElement('span', 'extra-effect-trait', `(${trait})`));
+                extraSection.appendChild(effectRow);
+            });
+
+            card.appendChild(extraSection);
+        }
+
         return card;
     },
 
@@ -424,91 +424,6 @@ const App = {
             Storage.saveCurrentConfig(this.state.currentConfig);
             this.render();
         }
-    },
-
-    /**
-     * 顯示特性編輯 Modal
-     */
-    showTraitsModal() {
-        const modal = document.getElementById('traitsModal');
-        const list = document.getElementById('traitsList');
-        if (!modal || !list) return;
-
-        this.renderTraitsList();
-        modal.classList.add('active');
-    },
-
-    /**
-     * 渲染特性列表
-     */
-    renderTraitsList() {
-        const list = document.getElementById('traitsList');
-        if (!list) return;
-
-        this.clearElement(list);
-
-        // 從建築資料中取得所有特性
-        const allTraits = TraitsManager.extractTraitsFromBuildings(this.state.buildings);
-        const savedTraits = this.state.traits;
-
-        if (allTraits.length === 0) {
-            list.appendChild(this.createElement('div', 'no-traits', '無特性資料'));
-            return;
-        }
-
-        allTraits.forEach(traitName => {
-            const effect = savedTraits[traitName] || { agriculture: 0, mining: 0, military: 0, commerce: 0 };
-
-            const item = this.createElement('div', 'trait-item');
-            item.dataset.trait = traitName;
-
-            item.appendChild(this.createElement('div', 'trait-name', traitName));
-
-            const inputs = this.createElement('div', 'trait-inputs');
-            const fields = [
-                { key: 'agriculture', label: '農' },
-                { key: 'mining', label: '礦' },
-                { key: 'military', label: '軍' },
-                { key: 'commerce', label: '商' }
-            ];
-
-            fields.forEach(({ key, label }) => {
-                const labelEl = document.createElement('label');
-                labelEl.textContent = label;
-
-                const input = document.createElement('input');
-                input.type = 'number';
-                input.className = 'trait-input';
-                input.dataset.field = key;
-                input.value = effect[key];
-                input.min = '0';
-                input.addEventListener('change', (e) => this.onTraitInputChange(e));
-
-                labelEl.appendChild(input);
-                inputs.appendChild(labelEl);
-            });
-
-            item.appendChild(inputs);
-            list.appendChild(item);
-        });
-    },
-
-    /**
-     * 特性輸入變更處理
-     */
-    onTraitInputChange(e) {
-        const traitItem = e.target.closest('.trait-item');
-        const traitName = traitItem.dataset.trait;
-        const field = e.target.dataset.field;
-        const value = parseInt(e.target.value, 10) || 0;
-
-        if (!this.state.traits[traitName]) {
-            this.state.traits[traitName] = { agriculture: 0, mining: 0, military: 0, commerce: 0 };
-        }
-        this.state.traits[traitName][field] = value;
-
-        Storage.saveTraits(this.state.traits);
-        this.renderTraitsSummary();
     },
 
     /**

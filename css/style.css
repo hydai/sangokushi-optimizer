@@ -545,6 +545,37 @@ body {
     border-color: var(--primary-color);
 }
 
+/* 額外效果區塊 */
+.result-extra-effects {
+    padding: var(--spacing-md);
+    border-top: 1px solid var(--border-color);
+    background: #FFF8DC;
+}
+
+.extra-effects-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--warning-color);
+    margin-bottom: var(--spacing-sm);
+}
+
+.extra-effect-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-xs) 0;
+    font-size: 0.875rem;
+}
+
+.extra-effect-text {
+    color: var(--text-color);
+}
+
+.extra-effect-trait {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+}
+
 /* 響應式設計 */
 @media (max-width: 480px) {
     .container {
