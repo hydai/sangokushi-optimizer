@@ -20,6 +20,9 @@
     --text-on-primary: #1A1A1A;
     --warning-color-alpha: rgba(255, 193, 7, 0.1);
 
+    /* Modal 背景色 */
+    --modal-background: #1A1A1A;
+
     /* 背景色系 - 深色主題 */
     --background-color: #0D0D0D;
     --background-gradient: linear-gradient(
@@ -500,14 +503,15 @@ body {
 }
 
 /* Progressive enhancement: apply backdrop-filter only if supported */
-@supports (backdrop-filter: blur(4px)) {
+@supports (backdrop-filter: blur(4px)) or (-webkit-backdrop-filter: blur(4px)) {
     .modal {
+        -webkit-backdrop-filter: blur(4px);
         backdrop-filter: blur(4px);
     }
 }
 
 .modal-content {
-    background: var(--text-on-primary);
+    background: var(--modal-background);
     border-radius: var(--border-radius);
     width: 100%;
     max-width: 400px;
@@ -529,7 +533,7 @@ body {
     border-bottom: 1px solid var(--border-color);
     position: sticky;
     top: 0;
-    background: var(--text-on-primary);
+    background: var(--modal-background);
 }
 
 .modal-header h3 {
