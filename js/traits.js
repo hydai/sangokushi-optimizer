@@ -7,6 +7,9 @@ const TraitsManager = {
     // 特性效果資料（從 CSV 載入）
     traits: {},
 
+    // 最少需要的 CSV 行數（1 行標題 + 至少 1 行資料）
+    MIN_CSV_LINES: 2,
+
     /**
      * 從 URL 載入特性效果 CSV
      * @param {string} url - CSV 檔案 URL
@@ -35,7 +38,7 @@ const TraitsManager = {
      */
     parseCSV(csvText) {
         const lines = csvText.trim().split('\n');
-        if (lines.length < 2) return {};
+        if (lines.length < this.MIN_CSV_LINES) return {};
 
         const traits = {};
 

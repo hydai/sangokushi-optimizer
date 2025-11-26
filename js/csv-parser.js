@@ -4,6 +4,9 @@
  */
 
 const CSVParser = {
+    // 最少需要的 CSV 行數（1 行標題 + 至少 1 行資料）
+    MIN_CSV_LINES: 2,
+
     /**
      * 解析 CSV 文字內容
      * @param {string} csvText - CSV 原始文字
@@ -11,7 +14,7 @@ const CSVParser = {
      */
     parse(csvText) {
         const lines = csvText.trim().split('\n');
-        if (lines.length < 2) return [];
+        if (lines.length < this.MIN_CSV_LINES) return [];
 
         const headers = lines[0].split(',').map(h => h.trim());
         const buildings = [];
