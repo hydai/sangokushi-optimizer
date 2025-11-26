@@ -1044,10 +1044,10 @@ const App = {
         } catch (e) {
             console.error('匯入失敗:', e);
             await this.showAlertModal('錯誤', '無法讀取檔案');
+        } finally {
+            // 重設 input
+            event.target.value = '';
         }
-
-        // 重設 input
-        event.target.value = '';
     }
 };
 
