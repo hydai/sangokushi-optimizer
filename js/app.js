@@ -11,6 +11,9 @@ const App = {
         currentConfig: null
     },
 
+    // 當前活躍的 modal cleanup 函數（用於防止 memory leak）
+    _activeModalCleanup: null,
+
     /**
      * 安全建立元素的輔助函數
      */
@@ -25,9 +28,7 @@ const App = {
      * 清空元素內容
      */
     clearElement(el) {
-        while (el.firstChild) {
-            el.removeChild(el.firstChild);
-        }
+        el.textContent = '';
     },
 
     /**
@@ -432,6 +433,11 @@ const App = {
      * 關閉所有 Modal
      */
     closeModals() {
+        // 呼叫活躍的 modal cleanup 函數（防止 memory leak）
+        if (this._activeModalCleanup) {
+            this._activeModalCleanup();
+            this._activeModalCleanup = null;
+        }
         document.querySelectorAll('.modal').forEach(modal => {
             modal.classList.remove('active');
         });
@@ -464,6 +470,7 @@ const App = {
                 confirmBtn.removeEventListener('click', onConfirm);
                 cancelBtn.removeEventListener('click', onCancel);
                 input.removeEventListener('keydown', onKeydown);
+                this._activeModalCleanup = null;
             };
 
             const onConfirm = () => {
@@ -480,6 +487,14 @@ const App = {
             const onKeydown = (e) => {
                 if (e.key === 'Enter') onConfirm();
                 if (e.key === 'Escape') onCancel();
+            };
+
+            // 註冊 cleanup 供 closeModals 使用（防止 memory leak）
+            this._activeModalCleanup = () => {
+                confirmBtn.removeEventListener('click', onConfirm);
+                cancelBtn.removeEventListener('click', onCancel);
+                input.removeEventListener('keydown', onKeydown);
+                resolve(null);
             };
 
             confirmBtn.addEventListener('click', onConfirm);
@@ -508,10 +523,17 @@ const App = {
             const cleanup = () => {
                 modal.classList.remove('active');
                 confirmBtn.removeEventListener('click', onConfirm);
+                this._activeModalCleanup = null;
             };
 
             const onConfirm = () => {
                 cleanup();
+                resolve();
+            };
+
+            // 註冊 cleanup 供 closeModals 使用（防止 memory leak）
+            this._activeModalCleanup = () => {
+                confirmBtn.removeEventListener('click', onConfirm);
                 resolve();
             };
 
@@ -541,6 +563,7 @@ const App = {
                 modal.classList.remove('active');
                 confirmBtn.removeEventListener('click', onConfirm);
                 cancelBtn.removeEventListener('click', onCancel);
+                this._activeModalCleanup = null;
             };
 
             const onConfirm = () => {
@@ -550,6 +573,13 @@ const App = {
 
             const onCancel = () => {
                 cleanup();
+                resolve(false);
+            };
+
+            // 註冊 cleanup 供 closeModals 使用（防止 memory leak）
+            this._activeModalCleanup = () => {
+                confirmBtn.removeEventListener('click', onConfirm);
+                cancelBtn.removeEventListener('click', onCancel);
                 resolve(false);
             };
 
