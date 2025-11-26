@@ -175,7 +175,7 @@ const Storage = {
             const buildings = this.getUserBuildings();
             const newBuilding = {
                 ...building,
-                id: `user-building-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                id: `user-building-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
                 addedAt: new Date().toISOString()
             };
             buildings.push(newBuilding);

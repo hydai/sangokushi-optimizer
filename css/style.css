@@ -79,6 +79,11 @@
     padding: 0;
 }
 
+/* 工具類別 */
+.hidden {
+    display: none !important;
+}
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'PingFang TC',
                  'Microsoft JhengHei', 'Noto Sans TC', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
