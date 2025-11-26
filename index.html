@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>三國志城建優化器</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>三國志城建優化器</h1>
+        </header>
+
+        <!-- 配置管理 -->
+        <section class="section config-section">
+            <div class="config-buttons">
+                <button id="newConfigBtn" class="btn btn-secondary">重設</button>
+                <button id="loadConfigBtn" class="btn btn-secondary">載入配置</button>
+                <button id="saveConfigBtn" class="btn btn-primary">儲存配置</button>
+            </div>
+        </section>
+
+        <!-- 槽位選擇 -->
+        <section class="section">
+            <h2 class="section-title">已開放槽位</h2>
+            <div class="slots-grid">
+                <label class="slot-label">
+                    <input type="checkbox" id="slot-mainHall" class="slot-checkbox" checked>
+                    <span>主殿</span>
+                </label>
+                <label class="slot-label">
+                    <input type="checkbox" id="slot-cityWall" class="slot-checkbox" checked>
+                    <span>城牆</span>
+                </label>
+                <label class="slot-label">
+                    <input type="checkbox" id="slot-plaza" class="slot-checkbox" checked>
+                    <span>廣場</span>
+                </label>
+                <label class="slot-label">
+                    <input type="checkbox" id="slot-westMarket1" class="slot-checkbox" checked>
+                    <span>西坊</span>
+                </label>
+                <label class="slot-label">
+                    <input type="checkbox" id="slot-westMarket2" class="slot-checkbox" checked>
+                    <span>西市</span>
+                </label>
+                <label class="slot-label">
+                    <input type="checkbox" id="slot-eastMarket1" class="slot-checkbox">
+                    <span>東坊</span>
+                </label>
+                <label class="slot-label">
+                    <input type="checkbox" id="slot-eastMarket2" class="slot-checkbox">
+                    <span>東市</span>
+                </label>
+            </div>
+        </section>
+
+        <!-- 目標數值 -->
+        <section class="section">
+            <h2 class="section-title">目標數值 <span class="threshold-hint">(門檻: 15/50/75/100)</span></h2>
+            <div class="targets-grid">
+                <div class="target-item">
+                    <label for="target-agriculture">農業</label>
+                    <input type="number" id="target-agriculture" class="target-input" min="0" placeholder="0">
+                </div>
+                <div class="target-item">
+                    <label for="target-mining">礦業</label>
+                    <input type="number" id="target-mining" class="target-input" min="0" placeholder="0">
+                </div>
+                <div class="target-item">
+                    <label for="target-military">軍事</label>
+                    <input type="number" id="target-military" class="target-input" min="0" placeholder="0">
+                </div>
+                <div class="target-item">
+                    <label for="target-commerce">商業</label>
+                    <input type="number" id="target-commerce" class="target-input" min="0" placeholder="0">
+                </div>
+            </div>
+        </section>
+
+        <!-- 特性效果 -->
+        <section class="section">
+            <div class="traits-header">
+                <h2 class="section-title">特性效果</h2>
+                <button id="editTraitsBtn" class="btn btn-small">編輯</button>
+            </div>
+            <div id="traitsSummary" class="traits-summary">
+                <span class="no-traits">尚未設定特性效果</span>
+            </div>
+        </section>
+
+        <!-- 搜尋按鈕 -->
+        <section class="section search-section">
+            <button id="searchBtn" class="btn btn-large btn-primary">搜尋最佳組合</button>
+        </section>
+
+        <!-- 搜尋結果 -->
+        <section class="section results-section">
+            <h2 class="section-title">搜尋結果 <span class="results-hint">Top 5</span></h2>
+            <div id="results" class="results-container">
+                <div class="no-results">
+                    <p>點擊「搜尋最佳組合」開始</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- 載入配置 Modal -->
+    <div id="loadConfigModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>載入配置</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div id="configList" class="config-list"></div>
+        </div>
+    </div>
+
+    <!-- 特性編輯 Modal -->
+    <div id="traitsModal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3>編輯特性效果</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <p class="modal-hint">設定各特性對數值的加成效果</p>
+            <div id="traitsList" class="traits-list"></div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="js/csv-parser.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/traits.js"></script>
+    <script src="js/solver.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
