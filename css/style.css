@@ -11,7 +11,14 @@
 
     /* 次要色系 */
     --secondary-color: #8B0000;
+    --secondary-color-light: rgba(139, 0, 0, 0.8);
+    --secondary-color-dark: rgba(70, 0, 0, 0.9);
     --accent-color: #D4AF37;
+
+    /* 漸層輔助色 */
+    --primary-gradient-end: #A68B1C;
+    --text-on-primary: #1A1A1A;
+    --warning-color-alpha: rgba(255, 193, 7, 0.1);
 
     /* 背景色系 - 深色主題 */
     --background-color: #0D0D0D;
@@ -71,7 +78,7 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'PingFang TC',
-                 'Microsoft JhengHei', 'Noto Sans TC', sans-serif;
+                 'Microsoft JhengHei', 'Noto Sans TC', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
     background: var(--background-gradient);
     background-attachment: fixed;
     color: var(--text-color);
@@ -167,14 +174,14 @@ body {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, var(--primary-color) 0%, #A68B1C 100%);
-    color: #1A1A1A;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-gradient-end) 100%);
+    color: var(--text-on-primary);
     border: 1px solid var(--border-accent);
-    box-shadow: 0 2px 8px rgba(201, 162, 39, 0.3);
+    box-shadow: 0 2px 8px var(--border-glow);
 }
 
 .btn-primary:hover {
-    background: linear-gradient(135deg, var(--primary-hover) 0%, #C9A227 100%);
+    background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary-color) 100%);
     box-shadow: 0 4px 16px rgba(201, 162, 39, 0.5);
     transform: translateY(-1px);
 }
@@ -248,6 +255,14 @@ body {
     cursor: pointer;
 }
 
+/*
+ * NOTE: This selector requires the following HTML structure:
+ * <label class="slot-label">
+ *   <input type="checkbox" class="slot-checkbox" />
+ *   <span>Label text</span>
+ * </label>
+ * The <span> must immediately follow the checkbox input.
+ */
 .slot-checkbox:checked + span {
     color: var(--text-gold);
 }
@@ -366,7 +381,7 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: var(--spacing-sm) var(--spacing-md);
-    background: linear-gradient(135deg, rgba(139, 0, 0, 0.8) 0%, rgba(70, 0, 0, 0.9) 100%);
+    background: linear-gradient(135deg, var(--secondary-color-light) 0%, var(--secondary-color-dark) 100%);
     border-bottom: 1px solid var(--border-accent);
     color: var(--text-color);
 }
@@ -457,7 +472,7 @@ body {
     border-radius: 3px;
     margin-left: var(--spacing-xs);
     font-weight: normal;
-    border: 1px solid rgba(139, 0, 0, 0.5);
+    border: 1px solid var(--secondary-color-light);
 }
 
 .building-bonuses {
@@ -478,15 +493,21 @@ body {
     align-items: center;
     justify-content: center;
     padding: var(--spacing-md);
-    backdrop-filter: blur(4px);
 }
 
 .modal.active {
     display: flex;
 }
 
+/* Progressive enhancement: apply backdrop-filter only if supported */
+@supports (backdrop-filter: blur(4px)) {
+    .modal {
+        backdrop-filter: blur(4px);
+    }
+}
+
 .modal-content {
-    background: #1A1A1A;
+    background: var(--text-on-primary);
     border-radius: var(--border-radius);
     width: 100%;
     max-width: 400px;
@@ -508,7 +529,7 @@ body {
     border-bottom: 1px solid var(--border-color);
     position: sticky;
     top: 0;
-    background: #1A1A1A;
+    background: var(--text-on-primary);
 }
 
 .modal-header h3 {
@@ -572,8 +593,8 @@ body {
 .config-item .btn-load {
     padding: var(--spacing-xs) var(--spacing-sm);
     font-size: 0.75rem;
-    background: linear-gradient(135deg, var(--primary-color) 0%, #A68B1C 100%);
-    color: #1A1A1A;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-gradient-end) 100%);
+    color: var(--text-on-primary);
     border: none;
     border-radius: 4px;
     cursor: pointer;
@@ -662,7 +683,7 @@ body {
 .result-extra-effects {
     padding: var(--spacing-md);
     border-top: 1px solid var(--border-color);
-    background: rgba(255, 193, 7, 0.1);
+    background: var(--warning-color-alpha);
 }
 
 .extra-effects-title {
