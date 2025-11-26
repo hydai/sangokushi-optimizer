@@ -2,35 +2,74 @@
    三國志城建優化器 - 樣式表
    ======================================== */
 
-/* CSS 變數 */
+/* CSS 變數 - 三國志戰略版深色主題 */
 :root {
-    --primary-color: #8B4513;
-    --primary-hover: #A0522D;
-    --secondary-color: #6B8E23;
-    --background-color: #FDF5E6;
-    --card-background: #FFFAF0;
-    --border-color: #DEB887;
-    --text-color: #333;
-    --text-muted: #666;
-    --success-color: #228B22;
-    --warning-color: #DAA520;
-    --danger-color: #CD5C5C;
+    /* 主色系 - 金色/青銅色 */
+    --primary-color: #C9A227;
+    --primary-hover: #E5B82A;
+    --primary-dark: #8B7355;
 
-    --threshold-max: #228B22;
+    /* 次要色系 */
+    --secondary-color: #8B0000;
+    --secondary-color-light: rgba(139, 0, 0, 0.8);
+    --secondary-color-dark: rgba(70, 0, 0, 0.9);
+    --accent-color: #D4AF37;
+
+    /* 漸層輔助色 */
+    --primary-gradient-end: #A68B1C;
+    --text-on-primary: #1A1A1A;
+    --warning-color-alpha: rgba(255, 193, 7, 0.1);
+
+    /* Modal 背景色 */
+    --modal-background: #1A1A1A;
+
+    /* 背景色系 - 深色主題 */
+    --background-color: #0D0D0D;
+    --background-gradient: linear-gradient(
+        135deg,
+        #0D0D0D 0%,
+        #1A1A1A 30%,
+        #2D2D2D 50%,
+        #1A1A1A 70%,
+        #0D0D0D 100%
+    );
+    --card-background: rgba(26, 26, 26, 0.95);
+    --card-background-hover: rgba(45, 45, 45, 0.95);
+
+    /* 邊框色系 */
+    --border-color: #3D3D3D;
+    --border-accent: #C9A227;
+    --border-glow: rgba(201, 162, 39, 0.3);
+
+    /* 文字色系 */
+    --text-color: #E5E5E5;
+    --text-muted: #999999;
+    --text-gold: #C9A227;
+
+    /* 狀態色系 */
+    --success-color: #4CAF50;
+    --warning-color: #FFC107;
+    --danger-color: #DC3545;
+
+    /* 門檻指示器 */
+    --threshold-max: #FFD700;
     --threshold-high: #32CD32;
-    --threshold-mid: #DAA520;
+    --threshold-mid: #FFA500;
     --threshold-low: #CD853F;
-    --threshold-none: #999;
+    --threshold-none: #666666;
 
+    /* 間距系統 */
     --spacing-xs: 0.25rem;
     --spacing-sm: 0.5rem;
     --spacing-md: 1rem;
     --spacing-lg: 1.5rem;
     --spacing-xl: 2rem;
 
+    /* 圓角與陰影 */
     --border-radius: 8px;
-    --shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.15);
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.7);
+    --shadow-glow: 0 0 20px rgba(201, 162, 39, 0.2);
 }
 
 /* 基礎樣式 */
@@ -41,10 +80,12 @@
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    background-color: var(--background-color);
+    font-family: -apple-system, BlinkMacSystemFont, 'PingFang TC',
+                 'Microsoft JhengHei', 'Noto Sans TC', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    background: var(--background-gradient);
+    background-attachment: fixed;
     color: var(--text-color);
-    line-height: 1.5;
+    line-height: 1.6;
     min-height: 100vh;
 }
 
@@ -58,14 +99,29 @@ body {
 /* 標題 */
 .header {
     text-align: center;
-    padding: var(--spacing-lg) 0;
-    border-bottom: 2px solid var(--border-color);
+    padding: var(--spacing-xl) 0 var(--spacing-lg);
+    border-bottom: 1px solid var(--border-accent);
     margin-bottom: var(--spacing-lg);
+    position: relative;
+}
+
+.header::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--border-accent), transparent);
 }
 
 .header h1 {
-    color: var(--primary-color);
-    font-size: 1.5rem;
+    color: var(--text-gold);
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-shadow: 0 0 20px rgba(201, 162, 39, 0.3);
 }
 
 /* 區塊 */
@@ -75,15 +131,28 @@ body {
     border-radius: var(--border-radius);
     padding: var(--spacing-md);
     margin-bottom: var(--spacing-md);
+    position: relative;
+    box-shadow: var(--shadow);
+}
+
+.section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border-accent) 20%, var(--border-accent) 80%, transparent);
 }
 
 .section-title {
     font-size: 1rem;
-    color: var(--primary-color);
+    color: var(--text-gold);
     margin-bottom: var(--spacing-md);
     display: flex;
     align-items: center;
     gap: var(--spacing-sm);
+    font-weight: 600;
 }
 
 .threshold-hint,
@@ -103,26 +172,32 @@ body {
     border-radius: var(--border-radius);
     font-size: 0.875rem;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
+    font-weight: 500;
 }
 
 .btn-primary {
-    background-color: var(--primary-color);
-    color: white;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-gradient-end) 100%);
+    color: var(--text-on-primary);
+    border: 1px solid var(--border-accent);
+    box-shadow: 0 2px 8px var(--border-glow);
 }
 
 .btn-primary:hover {
-    background-color: var(--primary-hover);
+    background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary-color) 100%);
+    box-shadow: 0 4px 16px rgba(201, 162, 39, 0.5);
+    transform: translateY(-1px);
 }
 
 .btn-secondary {
-    background-color: white;
-    color: var(--text-color);
-    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--text-gold);
+    border: 1px solid var(--border-accent);
 }
 
 .btn-secondary:hover {
-    background-color: var(--background-color);
+    background: rgba(201, 162, 39, 0.1);
+    box-shadow: 0 0 10px rgba(201, 162, 39, 0.2);
 }
 
 .btn-small {
@@ -135,6 +210,7 @@ body {
     padding: var(--spacing-md);
     font-size: 1rem;
     font-weight: bold;
+    letter-spacing: 0.05em;
 }
 
 /* 配置按鈕區 */
@@ -162,21 +238,36 @@ body {
     align-items: center;
     gap: var(--spacing-xs);
     padding: var(--spacing-sm);
-    background: white;
+    background: rgba(0, 0, 0, 0.3);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
+    color: var(--text-color);
 }
 
 .slot-label:hover {
-    border-color: var(--primary-color);
+    border-color: var(--border-accent);
+    background: rgba(201, 162, 39, 0.1);
 }
 
 .slot-checkbox {
     width: 18px;
     height: 18px;
     accent-color: var(--primary-color);
+    cursor: pointer;
+}
+
+/*
+ * NOTE: This selector requires the following HTML structure:
+ * <label class="slot-label">
+ *   <input type="checkbox" class="slot-checkbox" />
+ *   <span>Label text</span>
+ * </label>
+ * The <span> must immediately follow the checkbox input.
+ */
+.slot-checkbox:checked + span {
+    color: var(--text-gold);
 }
 
 /* 目標數值 */
@@ -204,11 +295,19 @@ body {
     border-radius: var(--border-radius);
     font-size: 1rem;
     text-align: center;
+    background: rgba(0, 0, 0, 0.3);
+    color: var(--text-color);
+    transition: all 0.3s ease;
 }
 
 .target-input:focus {
     outline: none;
-    border-color: var(--primary-color);
+    border-color: var(--border-accent);
+    box-shadow: 0 0 10px rgba(201, 162, 39, 0.2);
+}
+
+.target-input::placeholder {
+    color: var(--text-muted);
 }
 
 /* 特性區域 */
@@ -225,9 +324,10 @@ body {
 
 .traits-summary {
     padding: var(--spacing-sm);
-    background: white;
+    background: rgba(0, 0, 0, 0.3);
     border-radius: var(--border-radius);
     text-align: center;
+    border: 1px solid var(--border-color);
 }
 
 .no-traits {
@@ -271,11 +371,12 @@ body {
 
 /* 結果卡片 */
 .result-card {
-    background: white;
+    background: var(--card-background);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     margin-bottom: var(--spacing-md);
     overflow: hidden;
+    box-shadow: var(--shadow);
 }
 
 .result-header {
@@ -283,17 +384,19 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: var(--spacing-sm) var(--spacing-md);
-    background: var(--primary-color);
-    color: white;
+    background: linear-gradient(135deg, var(--secondary-color-light) 0%, var(--secondary-color-dark) 100%);
+    border-bottom: 1px solid var(--border-accent);
+    color: var(--text-color);
 }
 
 .result-rank {
     font-weight: bold;
+    color: var(--text-gold);
 }
 
 .result-score {
     font-size: 0.875rem;
-    opacity: 0.9;
+    color: var(--text-muted);
 }
 
 .result-stats {
@@ -301,7 +404,7 @@ body {
     grid-template-columns: repeat(2, 1fr);
     gap: var(--spacing-sm);
     padding: var(--spacing-md);
-    background: var(--background-color);
+    background: rgba(0, 0, 0, 0.4);
 }
 
 .stat-row {
@@ -320,6 +423,7 @@ body {
     font-weight: bold;
     width: 2rem;
     text-align: right;
+    color: var(--text-color);
 }
 
 .threshold-indicator {
@@ -359,17 +463,19 @@ body {
 .building-name {
     flex: 1;
     font-weight: 500;
+    color: var(--text-color);
 }
 
 .building-trait {
     display: inline-block;
     font-size: 0.7rem;
-    background: var(--secondary-color);
-    color: white;
+    background: linear-gradient(135deg, var(--secondary-color) 0%, #5C0000 100%);
+    color: var(--text-color);
     padding: 0 var(--spacing-xs);
     border-radius: 3px;
     margin-left: var(--spacing-xs);
     font-weight: normal;
+    border: 1px solid var(--secondary-color-light);
 }
 
 .building-bonuses {
@@ -385,7 +491,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.8);
     z-index: 1000;
     align-items: center;
     justify-content: center;
@@ -396,14 +502,23 @@ body {
     display: flex;
 }
 
+/* Progressive enhancement: apply backdrop-filter only if supported */
+@supports (backdrop-filter: blur(4px)) or (-webkit-backdrop-filter: blur(4px)) {
+    .modal {
+        -webkit-backdrop-filter: blur(4px);
+        backdrop-filter: blur(4px);
+    }
+}
+
 .modal-content {
-    background: white;
+    background: var(--modal-background);
     border-radius: var(--border-radius);
     width: 100%;
     max-width: 400px;
     max-height: 80vh;
     overflow-y: auto;
     box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border-accent);
 }
 
 .modal-large {
@@ -418,12 +533,12 @@ body {
     border-bottom: 1px solid var(--border-color);
     position: sticky;
     top: 0;
-    background: white;
+    background: var(--modal-background);
 }
 
 .modal-header h3 {
     font-size: 1rem;
-    color: var(--primary-color);
+    color: var(--text-gold);
 }
 
 .modal-close {
@@ -433,17 +548,18 @@ body {
     cursor: pointer;
     color: var(--text-muted);
     line-height: 1;
+    transition: color 0.3s ease;
 }
 
 .modal-close:hover {
-    color: var(--text-color);
+    color: var(--text-gold);
 }
 
 .modal-hint {
     padding: var(--spacing-sm) var(--spacing-md);
     font-size: 0.875rem;
     color: var(--text-muted);
-    background: var(--background-color);
+    background: rgba(0, 0, 0, 0.3);
 }
 
 /* 配置列表 */
@@ -459,11 +575,18 @@ body {
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     margin-bottom: var(--spacing-sm);
+    background: rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+}
+
+.config-item:hover {
+    border-color: var(--border-accent);
 }
 
 .config-name {
     flex: 1;
     font-weight: 500;
+    color: var(--text-color);
 }
 
 .config-date {
@@ -474,11 +597,16 @@ body {
 .config-item .btn-load {
     padding: var(--spacing-xs) var(--spacing-sm);
     font-size: 0.75rem;
-    background: var(--secondary-color);
-    color: white;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-gradient-end) 100%);
+    color: var(--text-on-primary);
     border: none;
     border-radius: 4px;
     cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.config-item .btn-load:hover {
+    box-shadow: 0 2px 8px rgba(201, 162, 39, 0.4);
 }
 
 .config-item .btn-delete {
@@ -489,6 +617,11 @@ body {
     border: none;
     border-radius: 4px;
     cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.config-item .btn-delete:hover {
+    background: #C0392B;
 }
 
 .no-configs {
@@ -510,11 +643,12 @@ body {
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     margin-bottom: var(--spacing-sm);
+    background: rgba(0, 0, 0, 0.3);
 }
 
 .trait-name {
     font-weight: 500;
-    color: var(--primary-color);
+    color: var(--text-gold);
 }
 
 .trait-inputs {
@@ -538,18 +672,22 @@ body {
     border-radius: 4px;
     text-align: center;
     font-size: 0.875rem;
+    background: rgba(0, 0, 0, 0.3);
+    color: var(--text-color);
+    transition: all 0.3s ease;
 }
 
 .trait-input:focus {
     outline: none;
-    border-color: var(--primary-color);
+    border-color: var(--border-accent);
+    box-shadow: 0 0 8px rgba(201, 162, 39, 0.2);
 }
 
 /* 額外效果區塊 */
 .result-extra-effects {
     padding: var(--spacing-md);
     border-top: 1px solid var(--border-color);
-    background: #FFF8DC;
+    background: var(--warning-color-alpha);
 }
 
 .extra-effects-title {
@@ -598,11 +736,19 @@ body {
     border-radius: var(--border-radius);
     font-size: 1rem;
     box-sizing: border-box;
+    background: rgba(0, 0, 0, 0.3);
+    color: var(--text-color);
+    transition: all 0.3s ease;
 }
 
 .modal-input:focus {
     outline: none;
-    border-color: var(--primary-color);
+    border-color: var(--border-accent);
+    box-shadow: 0 0 10px rgba(201, 162, 39, 0.2);
+}
+
+.modal-input::placeholder {
+    color: var(--text-muted);
 }
 
 .modal-footer {
@@ -611,16 +757,78 @@ body {
     gap: var(--spacing-sm);
     padding: var(--spacing-md);
     border-top: 1px solid var(--border-color);
-    background: var(--background-color);
+    background: rgba(0, 0, 0, 0.3);
 }
 
 .btn-danger {
-    background: var(--danger-color);
+    background: linear-gradient(135deg, var(--danger-color) 0%, #A02020 100%);
     color: white;
+    border: 1px solid var(--danger-color);
 }
 
 .btn-danger:hover {
-    background: #C0392B;
+    background: linear-gradient(135deg, #E04040 0%, var(--danger-color) 100%);
+    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.4);
+}
+
+/* 裝飾性元素 */
+.section.decorated {
+    position: relative;
+}
+
+.section.decorated::before,
+.section.decorated::after {
+    content: '';
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border-color: var(--border-accent);
+    border-style: solid;
+    border-width: 0;
+}
+
+.section.decorated::before {
+    top: -1px;
+    left: -1px;
+    border-top-width: 2px;
+    border-left-width: 2px;
+}
+
+.section.decorated::after {
+    bottom: -1px;
+    right: -1px;
+    border-bottom-width: 2px;
+    border-right-width: 2px;
+}
+
+/* 光暈效果 */
+.glow {
+    box-shadow: var(--shadow-glow);
+}
+
+/* 選取高亮 */
+::selection {
+    background: rgba(201, 162, 39, 0.3);
+    color: var(--text-color);
+}
+
+/* 滾動條樣式 */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--background-color);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--border-accent);
 }
 
 /* 響應式設計 */
