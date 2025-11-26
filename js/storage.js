@@ -6,7 +6,8 @@
 const Storage = {
     KEYS: {
         CONFIGS: 'sangokushi_configs',
-        CURRENT_CONFIG: 'sangokushi_current'
+        CURRENT_CONFIG: 'sangokushi_current',
+        USER_BUILDINGS: 'sangokushi_user_buildings'
     },
 
     /**
@@ -128,6 +129,142 @@ const Storage = {
     clearAll() {
         localStorage.removeItem(this.KEYS.CONFIGS);
         localStorage.removeItem(this.KEYS.CURRENT_CONFIG);
+        localStorage.removeItem(this.KEYS.USER_BUILDINGS);
+    },
+
+    // ========================================
+    // 使用者建築管理
+    // ========================================
+
+    /**
+     * 取得使用者擁有的建築
+     * @returns {Array} 使用者建築陣列
+     */
+    getUserBuildings() {
+        try {
+            const data = localStorage.getItem(this.KEYS.USER_BUILDINGS);
+            return data ? JSON.parse(data) : [];
+        } catch (e) {
+            console.error('讀取使用者建築失敗:', e);
+            return [];
+        }
+    },
+
+    /**
+     * 儲存使用者建築
+     * @param {Array} buildings - 建築陣列
+     * @returns {boolean} 是否成功
+     */
+    saveUserBuildings(buildings) {
+        try {
+            localStorage.setItem(this.KEYS.USER_BUILDINGS, JSON.stringify(buildings));
+            return true;
+        } catch (e) {
+            console.error('儲存使用者建築失敗:', e);
+            return false;
+        }
+    },
+
+    /**
+     * 新增使用者建築
+     * @param {Object} building - 建築物件
+     * @returns {Object|null} 新增的建築（含 ID），失敗則回傳 null
+     */
+    addUserBuilding(building) {
+        try {
+            const buildings = this.getUserBuildings();
+            const newBuilding = {
+                ...building,
+                id: `user-building-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
+                addedAt: new Date().toISOString()
+            };
+            buildings.push(newBuilding);
+            this.saveUserBuildings(buildings);
+            return newBuilding;
+        } catch (e) {
+            console.error('新增建築失敗:', e);
+            return null;
+        }
+    },
+
+    /**
+     * 刪除使用者建築
+     * @param {string} id - 建築 ID
+     * @returns {boolean} 是否成功
+     */
+    removeUserBuilding(id) {
+        try {
+            const buildings = this.getUserBuildings();
+            const filtered = buildings.filter(b => b.id !== id);
+            return this.saveUserBuildings(filtered);
+        } catch (e) {
+            console.error('刪除建築失敗:', e);
+            return false;
+        }
+    },
+
+    /**
+     * 重置為預設建築（從 CSV 載入的所有建築）
+     * @param {Array} defaultBuildings - 預設建築陣列
+     * @returns {boolean} 是否成功
+     */
+    resetToDefaults(defaultBuildings) {
+        const now = Date.now();
+        const buildingsWithIds = defaultBuildings.map((b, index) => ({
+            ...b,
+            id: `default-building-${index}-${now}`,
+            addedAt: new Date().toISOString()
+        }));
+        return this.saveUserBuildings(buildingsWithIds);
+    },
+
+    // ========================================
+    // 匯出/匯入功能
+    // ========================================
+
+    /**
+     * 匯出所有資料
+     * @returns {Object} 完整的匯出資料
+     */
+    exportAllData() {
+        return {
+            version: '1.0',
+            exportedAt: new Date().toISOString(),
+            userBuildings: this.getUserBuildings(),
+            searchConfigs: this.getConfigs(),
+            currentConfig: this.getCurrentConfig()
+        };
+    },
+
+    /**
+     * 匯入資料
+     * @param {Object} data - 匯入的資料物件
+     * @returns {boolean} 是否成功
+     */
+    importAllData(data) {
+        try {
+            if (!data || !data.version) {
+                console.error('匯入資料格式錯誤: 缺少版本資訊');
+                return false;
+            }
+
+            if (data.userBuildings && Array.isArray(data.userBuildings)) {
+                this.saveUserBuildings(data.userBuildings);
+            }
+
+            if (data.searchConfigs && Array.isArray(data.searchConfigs)) {
+                localStorage.setItem(this.KEYS.CONFIGS, JSON.stringify(data.searchConfigs));
+            }
+
+            if (data.currentConfig) {
+                this.saveCurrentConfig(data.currentConfig);
+            }
+
+            return true;
+        } catch (e) {
+            console.error('匯入資料失敗:', e);
+            return false;
+        }
     }
 };
 

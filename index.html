@@ -7,8 +7,44 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+    <!-- 側邊欄遮罩 -->
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+    <!-- 側邊欄 -->
+    <aside id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <h2>建築管理</h2>
+            <button id="sidebarClose" class="sidebar-close">&times;</button>
+        </div>
+
+        <div class="sidebar-section">
+            <button id="loadDefaultsBtn" class="btn btn-secondary btn-block">載入預設建築</button>
+        </div>
+
+        <div class="sidebar-section">
+            <h3 class="sidebar-section-title">新增建築</h3>
+            <div class="sidebar-hint">點擊建築名稱選擇變體</div>
+            <div id="buildingSelector" class="building-selector"></div>
+        </div>
+
+        <div class="sidebar-section sidebar-buildings-section">
+            <h3 class="sidebar-section-title">我的建築 (<span id="userBuildingCount">0</span>)</h3>
+            <div id="userBuildingsList" class="user-buildings-list"></div>
+        </div>
+
+        <div class="sidebar-section sidebar-footer">
+            <h3 class="sidebar-section-title">資料管理</h3>
+            <div class="export-import-buttons">
+                <button id="exportBtn" class="btn btn-primary">匯出資料</button>
+                <button id="importBtn" class="btn btn-secondary">匯入資料</button>
+            </div>
+            <input type="file" id="importFileInput" accept=".json" class="hidden">
+        </div>
+    </aside>
+
     <div class="container">
         <header class="header">
+            <button id="sidebarToggle" class="btn btn-secondary sidebar-toggle-btn">建築管理</button>
             <h1>三國志城建優化器</h1>
         </header>
 
@@ -152,6 +188,24 @@
             <div class="modal-footer">
                 <button id="confirmModalCancel" class="btn btn-secondary">取消</button>
                 <button id="confirmModalConfirm" class="btn btn-danger">確定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 建築變體選擇 Modal -->
+    <div id="buildingVariantModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>選擇建築變體</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="variantBuildingName" class="variant-building-name"></p>
+                <div id="variantList" class="variant-list"></div>
+            </div>
+            <div class="modal-footer">
+                <button id="variantCancelBtn" class="btn btn-secondary">取消</button>
+                <button id="variantAddBtn" class="btn btn-primary">新增選取</button>
             </div>
         </div>
     </div>
