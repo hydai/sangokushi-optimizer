@@ -340,14 +340,14 @@ const App = {
     /**
      * 儲存配置
      */
-    saveConfig() {
-        const name = prompt('請輸入配置名稱：');
+    async saveConfig() {
+        const name = await this.showInputModal('儲存配置', '請輸入配置名稱');
         if (!name) return;
 
         if (Storage.saveConfig(name, this.state.currentConfig)) {
-            alert('配置已儲存！');
+            await this.showAlertModal('成功', '配置已儲存！');
         } else {
-            alert('儲存失敗，請重試。');
+            await this.showAlertModal('錯誤', '儲存失敗，請重試。');
         }
     },
 
@@ -408,8 +408,9 @@ const App = {
     /**
      * 刪除配置
      */
-    deleteConfig(name) {
-        if (confirm(`確定要刪除配置「${name}」嗎？`)) {
+    async deleteConfig(name) {
+        const confirmed = await this.showConfirmModal('刪除配置', `確定要刪除配置「${name}」嗎？`);
+        if (confirmed) {
             Storage.deleteConfig(name);
             this.showLoadConfigModal();
         }
@@ -418,8 +419,9 @@ const App = {
     /**
      * 重設配置
      */
-    resetConfig() {
-        if (confirm('確定要重設為預設值嗎？')) {
+    async resetConfig() {
+        const confirmed = await this.showConfirmModal('重設配置', '確定要重設為預設值嗎？');
+        if (confirmed) {
             this.state.currentConfig = Storage.getDefaultConfig();
             Storage.saveCurrentConfig(this.state.currentConfig);
             this.render();
@@ -432,6 +434,127 @@ const App = {
     closeModals() {
         document.querySelectorAll('.modal').forEach(modal => {
             modal.classList.remove('active');
+        });
+    },
+
+    // ========== 自訂對話框方法 ==========
+
+    /**
+     * 顯示輸入對話框（取代 prompt）
+     * @param {string} title - 標題
+     * @param {string} placeholder - 輸入框提示文字
+     * @returns {Promise<string|null>} 使用者輸入的值，取消則為 null
+     */
+    showInputModal(title, placeholder = '') {
+        return new Promise((resolve) => {
+            const modal = document.getElementById('inputModal');
+            const titleEl = document.getElementById('inputModalTitle');
+            const input = document.getElementById('inputModalInput');
+            const confirmBtn = document.getElementById('inputModalConfirm');
+            const cancelBtn = document.getElementById('inputModalCancel');
+
+            titleEl.textContent = title;
+            input.value = '';
+            input.placeholder = placeholder;
+            modal.classList.add('active');
+            input.focus();
+
+            const cleanup = () => {
+                modal.classList.remove('active');
+                confirmBtn.removeEventListener('click', onConfirm);
+                cancelBtn.removeEventListener('click', onCancel);
+                input.removeEventListener('keydown', onKeydown);
+            };
+
+            const onConfirm = () => {
+                const value = input.value.trim();
+                cleanup();
+                resolve(value || null);
+            };
+
+            const onCancel = () => {
+                cleanup();
+                resolve(null);
+            };
+
+            const onKeydown = (e) => {
+                if (e.key === 'Enter') onConfirm();
+                if (e.key === 'Escape') onCancel();
+            };
+
+            confirmBtn.addEventListener('click', onConfirm);
+            cancelBtn.addEventListener('click', onCancel);
+            input.addEventListener('keydown', onKeydown);
+        });
+    },
+
+    /**
+     * 顯示提示對話框（取代 alert）
+     * @param {string} title - 標題
+     * @param {string} message - 訊息內容
+     * @returns {Promise<void>}
+     */
+    showAlertModal(title, message) {
+        return new Promise((resolve) => {
+            const modal = document.getElementById('alertModal');
+            const titleEl = document.getElementById('alertModalTitle');
+            const messageEl = document.getElementById('alertModalMessage');
+            const confirmBtn = document.getElementById('alertModalConfirm');
+
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+            modal.classList.add('active');
+
+            const cleanup = () => {
+                modal.classList.remove('active');
+                confirmBtn.removeEventListener('click', onConfirm);
+            };
+
+            const onConfirm = () => {
+                cleanup();
+                resolve();
+            };
+
+            confirmBtn.addEventListener('click', onConfirm);
+        });
+    },
+
+    /**
+     * 顯示確認對話框（取代 confirm）
+     * @param {string} title - 標題
+     * @param {string} message - 訊息內容
+     * @returns {Promise<boolean>} 使用者是否確認
+     */
+    showConfirmModal(title, message) {
+        return new Promise((resolve) => {
+            const modal = document.getElementById('confirmModal');
+            const titleEl = document.getElementById('confirmModalTitle');
+            const messageEl = document.getElementById('confirmModalMessage');
+            const confirmBtn = document.getElementById('confirmModalConfirm');
+            const cancelBtn = document.getElementById('confirmModalCancel');
+
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+            modal.classList.add('active');
+
+            const cleanup = () => {
+                modal.classList.remove('active');
+                confirmBtn.removeEventListener('click', onConfirm);
+                cancelBtn.removeEventListener('click', onCancel);
+            };
+
+            const onConfirm = () => {
+                cleanup();
+                resolve(true);
+            };
+
+            const onCancel = () => {
+                cleanup();
+                resolve(false);
+            };
+
+            confirmBtn.addEventListener('click', onConfirm);
+            cancelBtn.addEventListener('click', onCancel);
         });
     }
 };

@@ -576,6 +576,53 @@ body {
     font-size: 0.75rem;
 }
 
+/* 自訂對話框 Modal */
+.modal-small {
+    max-width: 360px;
+}
+
+.modal-body {
+    padding: var(--spacing-md);
+}
+
+.modal-body p {
+    margin: 0;
+    color: var(--text-color);
+    line-height: 1.5;
+}
+
+.modal-input {
+    width: 100%;
+    padding: var(--spacing-sm);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+.modal-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+    border-top: 1px solid var(--border-color);
+    background: var(--background-color);
+}
+
+.btn-danger {
+    background: var(--danger-color);
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #C0392B;
+}
+
 /* 響應式設計 */
 @media (max-width: 480px) {
     .container {

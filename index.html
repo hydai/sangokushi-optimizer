@@ -106,6 +106,56 @@
         </div>
     </div>
 
+    <!-- 輸入 Modal (取代 prompt) -->
+    <div id="inputModal" class="modal">
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h3 id="inputModalTitle">輸入</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="inputModalInput" class="modal-input" placeholder="">
+            </div>
+            <div class="modal-footer">
+                <button id="inputModalCancel" class="btn btn-secondary">取消</button>
+                <button id="inputModalConfirm" class="btn btn-primary">確定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 提示 Modal (取代 alert) -->
+    <div id="alertModal" class="modal">
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h3 id="alertModalTitle">提示</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="alertModalMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button id="alertModalConfirm" class="btn btn-primary">確定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 確認 Modal (取代 confirm) -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h3 id="confirmModalTitle">確認</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmModalMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button id="confirmModalCancel" class="btn btn-secondary">取消</button>
+                <button id="confirmModalConfirm" class="btn btn-danger">確定</button>
+            </div>
+        </div>
+    </div>
+
     <!-- JavaScript -->
     <script src="js/csv-parser.js"></script>
     <script src="js/storage.js"></script>
