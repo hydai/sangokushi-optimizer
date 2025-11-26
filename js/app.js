@@ -8,8 +8,16 @@ const App = {
     state: {
         buildings: [],
         buildingsBySlot: {},
-        currentConfig: null
+        currentConfig: null,
+        // 使用者建築管理
+        userBuildings: [],
+        userBuildingsBySlot: {},
+        buildingsByName: {},
+        sidebarOpen: false
     },
+
+    // 當前選擇的建築（用於變體選擇彈窗）
+    _currentVariantBuilding: null,
 
     // 當前活躍的 modal cleanup 函數（用於防止 memory leak）
     _activeModalCleanup: null,
@@ -43,6 +51,12 @@ const App = {
             this.loadTraits()
         ]);
 
+        // 將建築按名稱分組（供選擇器使用）
+        this.groupBuildingsByName();
+
+        // 載入使用者建築
+        this.loadUserBuildings();
+
         // 載入儲存的設定
         this.loadSavedSettings();
 
@@ -51,6 +65,10 @@ const App = {
 
         // 渲染 UI
         this.render();
+
+        // 渲染側邊欄元件
+        this.renderBuildingSelector();
+        this.renderUserBuildingsList();
 
         console.log('應用程式初始化完成');
     },
@@ -150,6 +168,25 @@ const App = {
                 if (e.target === modal) this.closeModals();
             });
         });
+
+        // ========== 側邊欄相關事件 ==========
+
+        // 側邊欄切換
+        document.getElementById('sidebarToggle')?.addEventListener('click', () => this.toggleSidebar());
+        document.getElementById('sidebarClose')?.addEventListener('click', () => this.closeSidebar());
+        document.getElementById('sidebarOverlay')?.addEventListener('click', () => this.closeSidebar());
+
+        // 載入預設建築
+        document.getElementById('loadDefaultsBtn')?.addEventListener('click', () => this.loadDefaultBuildings());
+
+        // 變體選擇彈窗
+        document.getElementById('variantAddBtn')?.addEventListener('click', () => this.addSelectedVariants());
+        document.getElementById('variantCancelBtn')?.addEventListener('click', () => this.closeModals());
+
+        // 匯出匯入
+        document.getElementById('exportBtn')?.addEventListener('click', () => this.exportData());
+        document.getElementById('importBtn')?.addEventListener('click', () => this.importData());
+        document.getElementById('importFileInput')?.addEventListener('change', (e) => this.handleImportFile(e));
     },
 
     /**
@@ -211,6 +248,16 @@ const App = {
         const resultsContainer = document.getElementById('results');
         if (!resultsContainer) return;
 
+        // 檢查是否有使用者建築
+        if (this.state.userBuildings.length === 0) {
+            this.clearElement(resultsContainer);
+            const noBuildings = this.createElement('div', 'no-results');
+            noBuildings.appendChild(this.createElement('p', null, '尚未添加任何建築'));
+            noBuildings.appendChild(this.createElement('p', 'hint', '請先在左側「建築管理」中添加您擁有的建築'));
+            resultsContainer.appendChild(noBuildings);
+            return;
+        }
+
         // 顯示載入中
         this.clearElement(resultsContainer);
         const loading = this.createElement('div', 'loading', '搜尋中...');
@@ -219,7 +266,7 @@ const App = {
         // 使用 setTimeout 讓 UI 更新
         setTimeout(() => {
             const results = Solver.search(
-                this.state.buildingsBySlot,
+                this.state.userBuildingsBySlot,  // 改用使用者建築
                 this.state.currentConfig.slots,
                 this.state.currentConfig.targets,
                 TraitsManager.getTraits(),
@@ -586,6 +633,406 @@ const App = {
             confirmBtn.addEventListener('click', onConfirm);
             cancelBtn.addEventListener('click', onCancel);
         });
+    },
+
+    // ========== 側邊欄管理 ==========
+
+    /**
+     * 切換側邊欄
+     */
+    toggleSidebar() {
+        this.state.sidebarOpen = !this.state.sidebarOpen;
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+
+        if (this.state.sidebarOpen) {
+            sidebar?.classList.add('open');
+            overlay?.classList.add('active');
+        } else {
+            sidebar?.classList.remove('open');
+            overlay?.classList.remove('active');
+        }
+    },
+
+    /**
+     * 關閉側邊欄
+     */
+    closeSidebar() {
+        this.state.sidebarOpen = false;
+        document.getElementById('sidebar')?.classList.remove('open');
+        document.getElementById('sidebarOverlay')?.classList.remove('active');
+    },
+
+    // ========== 建築選擇器 ==========
+
+    /**
+     * 將建築按名稱分組
+     */
+    groupBuildingsByName() {
+        const byName = {};
+        this.state.buildings.forEach(building => {
+            if (!byName[building.name]) {
+                byName[building.name] = {
+                    name: building.name,
+                    type: building.type,
+                    variants: []
+                };
+            }
+            byName[building.name].variants.push(building);
+        });
+        this.state.buildingsByName = byName;
+    },
+
+    /**
+     * 渲染建築選擇器
+     */
+    renderBuildingSelector() {
+        const container = document.getElementById('buildingSelector');
+        if (!container) return;
+
+        this.clearElement(container);
+
+        const types = ['主殿', '城牆', '廣場', '坊市'];
+
+        types.forEach(type => {
+            const typeGroup = this.createElement('div', 'building-type-group');
+            typeGroup.appendChild(this.createElement('div', 'building-type-title', type));
+
+            const buttonsContainer = this.createElement('div', 'building-buttons');
+
+            Object.values(this.state.buildingsByName)
+                .filter(b => b.type === type)
+                .forEach(buildingGroup => {
+                    const btn = this.createElement('button', 'building-name-btn', buildingGroup.name);
+                    btn.addEventListener('click', () => this.showBuildingVariantModal(buildingGroup.name));
+                    buttonsContainer.appendChild(btn);
+                });
+
+            typeGroup.appendChild(buttonsContainer);
+            container.appendChild(typeGroup);
+        });
+    },
+
+    // ========== 變體選擇彈窗 ==========
+
+    /**
+     * 顯示建築變體選擇彈窗
+     */
+    showBuildingVariantModal(buildingName) {
+        const buildingGroup = this.state.buildingsByName[buildingName];
+        if (!buildingGroup) return;
+
+        const modal = document.getElementById('buildingVariantModal');
+        const nameEl = document.getElementById('variantBuildingName');
+        const listEl = document.getElementById('variantList');
+
+        nameEl.textContent = buildingName;
+        this.clearElement(listEl);
+
+        // 取得特性列表
+        const traits = TraitsManager.getTraits();
+        const traitNames = Object.keys(traits);
+
+        buildingGroup.variants.forEach((variant, index) => {
+            const item = this.createElement('div', 'variant-item');
+            item.dataset.index = index;
+
+            // 勾選框
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'variant-checkbox';
+            checkbox.dataset.index = index;
+            item.appendChild(checkbox);
+
+            // 內容區
+            const content = this.createElement('div', 'variant-content');
+
+            // 資訊行
+            const info = this.createElement('div', 'variant-info');
+
+            // 數值顯示
+            const stats = [];
+            if (variant.agriculture) stats.push(`農+${variant.agriculture}`);
+            if (variant.mining) stats.push(`礦+${variant.mining}`);
+            if (variant.military) stats.push(`軍+${variant.military}`);
+            if (variant.commerce) stats.push(`商+${variant.commerce}`);
+            info.appendChild(this.createElement('span', 'variant-stats', stats.join(' ') || '無加成'));
+
+            // 原始特性標籤
+            if (variant.trait) {
+                info.appendChild(this.createElement('span', 'variant-original-trait', variant.trait));
+            }
+
+            // 位置顯示
+            if (variant.position && variant.position !== '--' && variant.position !== '裝配方案') {
+                info.appendChild(this.createElement('span', 'variant-position', `[${variant.position}]`));
+            }
+
+            content.appendChild(info);
+
+            // 特技選擇器
+            const traitSelector = this.createElement('div', 'variant-trait-selector');
+            traitSelector.appendChild(this.createElement('label', null, '特技:'));
+
+            const select = document.createElement('select');
+            select.className = 'variant-trait-select';
+            select.dataset.index = index;
+
+            // 無特技選項
+            const noneOption = document.createElement('option');
+            noneOption.value = '';
+            noneOption.textContent = '（無）';
+            select.appendChild(noneOption);
+
+            // 特技選項
+            traitNames.forEach(traitName => {
+                const option = document.createElement('option');
+                option.value = traitName;
+                option.textContent = traitName;
+                if (variant.trait === traitName) {
+                    option.selected = true;
+                }
+                select.appendChild(option);
+            });
+
+            traitSelector.appendChild(select);
+            content.appendChild(traitSelector);
+
+            item.appendChild(content);
+
+            // 點擊整行可切換勾選
+            item.addEventListener('click', (e) => {
+                if (e.target !== checkbox && e.target.tagName !== 'SELECT' && e.target.tagName !== 'OPTION') {
+                    checkbox.checked = !checkbox.checked;
+                }
+            });
+
+            listEl.appendChild(item);
+        });
+
+        modal.classList.add('active');
+        this._currentVariantBuilding = buildingGroup;
+    },
+
+    /**
+     * 新增選取的變體
+     */
+    addSelectedVariants() {
+        const listEl = document.getElementById('variantList');
+        const checkboxes = listEl.querySelectorAll('.variant-checkbox:checked');
+
+        if (checkboxes.length === 0) {
+            this.showAlertModal('提示', '請至少選擇一個建築變體');
+            return;
+        }
+
+        checkboxes.forEach(checkbox => {
+            const index = parseInt(checkbox.dataset.index, 10);
+            const variant = this._currentVariantBuilding.variants[index];
+
+            // 取得使用者選擇的特技
+            const select = listEl.querySelector(`.variant-trait-select[data-index="${index}"]`);
+            const selectedTrait = select ? select.value : variant.trait;
+
+            // 建立新建築物件（複製並覆蓋特技）
+            const newBuilding = {
+                ...variant,
+                trait: selectedTrait || ''
+            };
+
+            Storage.addUserBuilding(newBuilding);
+        });
+
+        this.closeModals();
+        this.loadUserBuildings();
+        this.renderUserBuildingsList();
+    },
+
+    // ========== 使用者建築管理 ==========
+
+    /**
+     * 載入使用者建築
+     */
+    loadUserBuildings() {
+        this.state.userBuildings = Storage.getUserBuildings();
+        this.processUserBuildingsBySlot();
+    },
+
+    /**
+     * 將使用者建築按槽位分組
+     */
+    processUserBuildingsBySlot() {
+        const buildings = this.state.userBuildings;
+
+        // 先按類型分組
+        const byType = {
+            '主殿': [],
+            '城牆': [],
+            '廣場': [],
+            '坊市': []
+        };
+
+        buildings.forEach(building => {
+            if (byType[building.type]) {
+                byType[building.type].push(building);
+            }
+        });
+
+        // 建立槽位對應
+        this.state.userBuildingsBySlot = {
+            '主殿': byType['主殿'] || [],
+            '城牆': byType['城牆'] || [],
+            '廣場': byType['廣場'] || [],
+            '西坊': [],
+            '西市': [],
+            '東坊': [],
+            '東市': []
+        };
+
+        // 將坊市建築分配到各槽位
+        const markets = byType['坊市'] || [];
+        const marketSlots = ['西坊', '西市', '東坊', '東市'];
+
+        markets.forEach(building => {
+            if (marketSlots.includes(building.position)) {
+                this.state.userBuildingsBySlot[building.position].push(building);
+            } else {
+                // 裝配方案或無固定位置 -> 可放任何坊市槽位
+                marketSlots.forEach(slot => {
+                    this.state.userBuildingsBySlot[slot].push(building);
+                });
+            }
+        });
+    },
+
+    /**
+     * 渲染使用者建築列表
+     */
+    renderUserBuildingsList() {
+        const container = document.getElementById('userBuildingsList');
+        const countEl = document.getElementById('userBuildingCount');
+        if (!container) return;
+
+        this.clearElement(container);
+
+        if (countEl) {
+            countEl.textContent = this.state.userBuildings.length;
+        }
+
+        if (this.state.userBuildings.length === 0) {
+            container.appendChild(this.createElement('div', 'empty-buildings', '尚未添加建築，請點擊上方建築名稱'));
+            return;
+        }
+
+        this.state.userBuildings.forEach(building => {
+            const item = this.createElement('div', 'user-building-item');
+
+            const info = this.createElement('div', 'user-building-info');
+            info.appendChild(this.createElement('span', 'user-building-name', building.name));
+
+            const stats = [];
+            if (building.agriculture) stats.push(`農+${building.agriculture}`);
+            if (building.mining) stats.push(`礦+${building.mining}`);
+            if (building.military) stats.push(`軍+${building.military}`);
+            if (building.commerce) stats.push(`商+${building.commerce}`);
+            info.appendChild(this.createElement('span', 'user-building-stats', stats.join(' ')));
+
+            if (building.trait) {
+                info.appendChild(this.createElement('span', 'user-building-trait', building.trait));
+            }
+
+            item.appendChild(info);
+
+            const deleteBtn = this.createElement('button', 'user-building-delete', '×');
+            deleteBtn.addEventListener('click', () => this.removeUserBuilding(building.id));
+            item.appendChild(deleteBtn);
+
+            container.appendChild(item);
+        });
+    },
+
+    /**
+     * 刪除使用者建築
+     */
+    async removeUserBuilding(id) {
+        const confirmed = await this.showConfirmModal('刪除建築', '確定要刪除此建築嗎？');
+        if (confirmed) {
+            Storage.removeUserBuilding(id);
+            this.loadUserBuildings();
+            this.renderUserBuildingsList();
+        }
+    },
+
+    /**
+     * 載入預設建築
+     */
+    async loadDefaultBuildings() {
+        const confirmed = await this.showConfirmModal(
+            '載入預設建築',
+            '這將以 CSV 中的所有建築取代目前的建築清單，確定要繼續嗎？'
+        );
+
+        if (confirmed) {
+            Storage.resetToDefaults(this.state.buildings);
+            this.loadUserBuildings();
+            this.renderUserBuildingsList();
+            await this.showAlertModal('成功', '已載入預設建築資料');
+        }
+    },
+
+    // ========== 匯出匯入 ==========
+
+    /**
+     * 匯出資料
+     */
+    exportData() {
+        const data = Storage.exportAllData();
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `sangokushi-backup-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    },
+
+    /**
+     * 觸發匯入檔案選擇
+     */
+    importData() {
+        document.getElementById('importFileInput')?.click();
+    },
+
+    /**
+     * 處理匯入檔案
+     */
+    async handleImportFile(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        try {
+            const text = await file.text();
+            const data = JSON.parse(text);
+
+            if (Storage.importAllData(data)) {
+                this.loadUserBuildings();
+                this.loadSavedSettings();
+                this.render();
+                this.renderUserBuildingsList();
+                await this.showAlertModal('成功', '資料已匯入');
+            } else {
+                await this.showAlertModal('錯誤', '匯入失敗，檔案格式不正確');
+            }
+        } catch (e) {
+            console.error('匯入失敗:', e);
+            await this.showAlertModal('錯誤', '無法讀取檔案');
+        }
+
+        // 重設 input
+        event.target.value = '';
     }
 };
 
